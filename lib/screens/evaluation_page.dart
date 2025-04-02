@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../models/evaluation_model.dart';
 
 class EvaluationPage extends StatefulWidget {
   final String userRole;
@@ -11,6 +12,36 @@ class EvaluationPage extends StatefulWidget {
 }
 
 class _EvaluationPageState extends State<EvaluationPage> {
+  final List<Evaluation> _evaluations = [];
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _scoreController = TextEditingController();
+  final TextEditingController _feedbackController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadEvaluations();
+  }
+
+  void _loadEvaluations() {
+    // Simular carga de evaluaciones
+    setState(() {
+      _evaluations.add(
+        Evaluation(
+          id: '1',
+          studentId: 'student1',
+          courseId: 'course1',
+          title: 'Proyecto Final',
+          type: 'proyecto',
+          score: 0,
+          status: 'pendiente',
+          evidences: [],
+          date: DateTime.now(),
+        ),
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,17 +56,17 @@ class _EvaluationPageState extends State<EvaluationPage> {
           return Card(
             margin: const EdgeInsets.all(8.0),
             child: ListTile(
-              title: Text(evaluation['title']),
-              subtitle: Text('Tipo: ${evaluation['type']}\nEstado: ${evaluation['status']}'),
-              trailing: evaluation['status'] == 'calificado'
-                  ? Text('${evaluation['score'] ?? 'N/A'}')
+              title: Text(evaluation.title),
+              subtitle: Text('Tipo: ${evaluation.type}\nEstado: ${evaluation.status}'),
+              trailing: evaluation.status == 'calificado'
+                  ? Text(evaluation.score.toString())
                   : null,
               onTap: () => _showEvaluationDetails(evaluation),
             ),
           );
         },
       ),
-      floatingActionButton: _isInstructor
+      floatingActionButton: widget.userRole == 'instructor'
           ? FloatingActionButton(
               onPressed: _showAddEvaluationDialog,
               child: const Icon(Icons.add),
@@ -43,114 +74,37 @@ class _EvaluationPageState extends State<EvaluationPage> {
           : null,
     );
   }
-  final List<Map<String, dynamic>> _evaluations = [
-    // Lista de evaluaciones con evidencias
-
-    {
-      'id': '1',
-      'title': 'Proyecto Final',
-      'type': 'proyecto',
-      'date': DateTime.now(),
-      'status': 'pendiente',
-      'evidencias': []
-    },
-    {
-      'id': '2',
-      'title': 'Quiz Módulo 1',
-      'type': 'quiz',
-      'date': DateTime.now(),
-      'status': 'calificado',
-      'evidencias': []
-    },
-  ];
 
   void _showAddEvaluationDialog() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        String title = '';
-        String type = 'quiz';
-        return AlertDialog(
-          title: const Text('Nueva Evaluación'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                decoration: const InputDecoration(
-                  labelText: 'Título',
-                  hintText: 'Ingrese el título de la evaluación',
-                ),
-                onChanged: (value) => title = value,
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: type,
-                decoration: const InputDecoration(
-                  labelText: 'Tipo de Evaluación',
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'quiz', child: Text('Quiz')),
-                  DropdownMenuItem(value: 'proyecto', child: Text('Proyecto')),
-                  DropdownMenuItem(value: 'taller', child: Text('Taller')),
-                ],
-                onChanged: (value) => type = value!,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (title.isNotEmpty) {
-                  setState(() {
-                    _evaluations.add({
-                      'id': DateTime.now().toString(),
-                      'title': title,
-                      'type': type,
-                      'date': DateTime.now(),
-                      'status': 'pendiente',
-                    });
-                  });
-                  Navigator.pop(context);
-                }
-              },
-              child: const Text('Crear'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+    String type = 'quiz';
+    _titleController.clear();
 
-  void _showGradeDialog(Map<String, dynamic> evaluation) {
-    double score = 0.0;
-    String feedback = '';
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Calificar Evaluación'),
+        title: const Text('Nueva Evaluación'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
+              controller: _titleController,
               decoration: const InputDecoration(
-                labelText: 'Calificación',
-                hintText: 'Ingrese una nota de 0 a 5',
+                labelText: 'Título',
+                hintText: 'Ingrese el título de la evaluación',
               ),
-              keyboardType: TextInputType.number,
-              onChanged: (value) => score = double.tryParse(value) ?? 0.0,
             ),
             const SizedBox(height: 16),
-            TextField(
+            DropdownButtonFormField<String>(
+              value: type,
               decoration: const InputDecoration(
-                labelText: 'Retroalimentación',
-                hintText: 'Ingrese sus comentarios',
+                labelText: 'Tipo de Evaluación',
               ),
-              maxLines: 3,
-              onChanged: (value) => feedback = value,
+              items: const [
+                DropdownMenuItem(value: 'quiz', child: Text('Quiz')),
+                DropdownMenuItem(value: 'proyecto', child: Text('Proyecto')),
+                DropdownMenuItem(value: 'taller', child: Text('Taller')),
+              ],
+              onChanged: (value) => type = value!,
             ),
           ],
         ),
@@ -161,11 +115,75 @@ class _EvaluationPageState extends State<EvaluationPage> {
           ),
           ElevatedButton(
             onPressed: () {
+              if (_titleController.text.isNotEmpty) {
+                setState(() {
+                  _evaluations.add(
+                    Evaluation(
+                      id: DateTime.now().toString(),
+                      studentId: 'student1', // Temporal
+                      courseId: 'course1', // Temporal
+                      title: _titleController.text,
+                      type: type,
+                      score: 0,
+                      status: 'pendiente',
+                      evidences: [],
+                      date: DateTime.now(),
+                    ),
+                  );
+                });
+                Navigator.pop(context);
+              }
+            },
+            child: const Text('Crear'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showGradeDialog(Evaluation evaluation) {
+    _scoreController.text = evaluation.score.toString();
+    _feedbackController.text = evaluation.feedback ?? '';
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Calificar Evaluación'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _scoreController,
+              decoration: const InputDecoration(
+                labelText: 'Calificación',
+                hintText: 'Ingrese una nota de 0 a 5',
+              ),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _feedbackController,
+              decoration: const InputDecoration(
+                labelText: 'Retroalimentación',
+                hintText: 'Ingrese sus comentarios',
+              ),
+              maxLines: 3,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final score = double.tryParse(_scoreController.text) ?? 0.0;
               if (score >= 0 && score <= 5) {
                 setState(() {
-                  evaluation['score'] = score;
-                  evaluation['feedback'] = feedback;
-                  evaluation['status'] = 'calificado';
+                  evaluation.score = score;
+                  evaluation.feedback = _feedbackController.text;
+                  evaluation.status = 'calificado';
                 });
                 Navigator.pop(context);
                 _showEvaluationDetails(evaluation);
@@ -184,98 +202,52 @@ class _EvaluationPageState extends State<EvaluationPage> {
     );
   }
 
-  bool get _isInstructor => widget.userRole == 'instructor';
-
-  void _showEvaluationDetails(Map<String, dynamic> evaluation) {
+  void _showEvaluationDetails(Evaluation evaluation) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(evaluation['title']),
+        title: Text(evaluation.title),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Tipo: ${evaluation['type']}'),
-            Text('Estado: ${evaluation['status']}'),
-            if (evaluation['status'] == 'calificado') ...[              
-              Text('Calificación: ${evaluation['score']}'),
-              if (evaluation['feedback']?.isNotEmpty ?? false)
-                Text('Retroalimentación: ${evaluation['feedback']}'),
+            Text('Tipo: ${evaluation.type}'),
+            Text('Estado: ${evaluation.status}'),
+            if (evaluation.status == 'calificado') ...[              
+              Text('Calificación: ${evaluation.score}'),
+              if (evaluation.feedback?.isNotEmpty ?? false)
+                Text('Retroalimentación: ${evaluation.feedback}'),
             ],
             Text(
-              'Fecha: ${evaluation['date'].day}/${evaluation['date'].month}/${evaluation['date'].year}',
+              'Fecha: ${evaluation.date.day}/${evaluation.date.month}/${evaluation.date.year}',
             ),
             const SizedBox(height: 16),
-            if (_isInstructor && evaluation['status'] == 'pendiente')
-              ElevatedButton(
-                onPressed: () => _showGradeDialog(evaluation),
-                child: const Text('Calificar'),
-              ),
-            if (_isInstructor && evaluation['status'] == 'calificado')
-              ElevatedButton(
-                onPressed: () => _showGradeDialog(evaluation),
-                child: const Text('Modificar Calificación'),
-              ),
-            ElevatedButton(
-              onPressed: () async {
-                final result = await showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Subir Evidencia'),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text('Seleccione el tipo de evidencia:'),
-                        const SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            ElevatedButton.icon(
-                              onPressed: () {
-                                Navigator.pop(context, 'documento');
-                              },
-                              icon: const Icon(Icons.description),
-                              label: const Text('Documento'),
-                            ),
-                            ElevatedButton.icon(
-                              onPressed: () {
-                                Navigator.pop(context, 'imagen');
-                              },
-                              icon: const Icon(Icons.image),
-                              label: const Text('Imagen'),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-
-                if (result != null) {
-                  setState(() {
-                    if (evaluation['evidencias'] == null) {
-                      evaluation['evidencias'] = [];
-                    }
-                    evaluation['evidencias'].add({
-                      'tipo': result,
-                      'fecha': DateTime.now(),
-                      'estado': 'pendiente_revision'
-                    });
-                  });
-                  
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Evidencia agregada correctamente'),
-                      backgroundColor: Colors.green,
-                    ),
+            const Text('Evidencias:', style: TextStyle(fontWeight: FontWeight.bold)),
+            if (evaluation.evidences.isEmpty)
+              const Text('No hay evidencias adjuntas')
+            else
+              ListView.builder(
+                shrinkWrap: true,
+                itemCount: evaluation.evidences.length,
+                itemBuilder: (context, index) {
+                  final evidence = evaluation.evidences[index];
+                  return ListTile(
+                    title: Text('Evidencia ${index + 1}'),
+                    subtitle: Text('Tipo: ${evidence.type}\nEstado: ${evidence.status}'),
                   );
-                }
-              },
-              child: const Text('Subir Evidencia'),
-            ),
+                },
+              ),
           ],
         ),
         actions: [
+          if (widget.userRole == 'instructor' && evaluation.status != 'calificado')
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _showGradeDialog(evaluation);
+              },
+              child: const Text('Calificar'),
+            ),
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Cerrar'),
@@ -283,5 +255,13 @@ class _EvaluationPageState extends State<EvaluationPage> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _scoreController.dispose();
+    _feedbackController.dispose();
+    super.dispose();
   }
 }

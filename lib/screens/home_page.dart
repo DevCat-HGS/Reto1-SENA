@@ -42,28 +42,31 @@ class _HomePageState extends State<HomePage> {
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.primary,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const CircleAvatar(
-                    radius: 30,
-                    child: Icon(Icons.person, size: 40),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Rol: ${widget.userRole}',
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'Nombre del Usuario',
-                    style: TextStyle(color: Colors.white, fontSize: 18),
-                  ),
-                  const Text(
-                    'correo@ejemplo.com',
-                    style: TextStyle(color: Colors.white70),
-                  ),
-                ],
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const CircleAvatar(
+                      radius: 30,
+                      child: Icon(Icons.person, size: 40),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Rol: ${widget.userRole}',
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Nombre del Usuario',
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                    ),
+                    const Text(
+                      'correo@ejemplo.com',
+                      style: TextStyle(color: Colors.white70),
+                    ),
+                  ],
+                ),
               ),
             ),
             ListTile(
