@@ -89,7 +89,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 controller: TextEditingController(text: address),
                 onChanged: (value) => address = value,
               ),
-          ],
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -115,7 +116,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ],
       ),
-    ));
+    );
   }
 
   @override

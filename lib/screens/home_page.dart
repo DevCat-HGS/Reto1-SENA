@@ -74,7 +74,7 @@ class _HomePageState extends State<HomePage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const AttendancePage(),
+                    builder: (context) => AttendancePage(userRole: widget.userRole),
                   ),
                 );
               },
@@ -87,7 +87,7 @@ class _HomePageState extends State<HomePage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const EvaluationPage(),
+                    builder: (context) => EvaluationPage(userRole: widget.userRole),
                   ),
                 );
               },

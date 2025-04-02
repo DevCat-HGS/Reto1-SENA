@@ -133,8 +133,7 @@ class _AttendancePageState extends State<AttendancePage> {
             ),
           ),
         ],
-      ),
-    );
+      );
   }
 
   Widget _buildStudentView() {

@@ -84,7 +84,7 @@ class Evaluation {
       score: map['score'],
       status: map['status'] ?? 'pendiente',
       feedback: map['feedback'],
-      evidenceUrls: List<String>.from(map['evidenceUrls'] ?? []),
+      evidences: (map['evidences'] as List<dynamic>?)?.map((e) => Evidence.fromMap(e as Map<String, dynamic>)).toList() ?? [],
       date: DateTime.parse(map['date']),
     );
   }

@@ -11,6 +11,38 @@ class EvaluationPage extends StatefulWidget {
 }
 
 class _EvaluationPageState extends State<EvaluationPage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Evaluaciones'),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+      ),
+      body: ListView.builder(
+        itemCount: _evaluations.length,
+        itemBuilder: (context, index) {
+          final evaluation = _evaluations[index];
+          return Card(
+            margin: const EdgeInsets.all(8.0),
+            child: ListTile(
+              title: Text(evaluation['title']),
+              subtitle: Text('Tipo: ${evaluation['type']}\nEstado: ${evaluation['status']}'),
+              trailing: evaluation['status'] == 'calificado'
+                  ? Text('${evaluation['score'] ?? 'N/A'}')
+                  : null,
+              onTap: () => _showEvaluationDetails(evaluation),
+            ),
+          );
+        },
+      ),
+      floatingActionButton: _isInstructor
+          ? FloatingActionButton(
+              onPressed: _showAddEvaluationDialog,
+              child: const Icon(Icons.add),
+            )
+          : null,
+    );
+  }
   final List<Map<String, dynamic>> _evaluations = [
     // Lista de evaluaciones con evidencias
 
