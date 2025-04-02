@@ -92,6 +92,19 @@ class _HomePageState extends State<HomePage> {
                 );
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.grade),
+              title: const Text('Calificaciones'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => GradesPage(userRole: widget.userRole),
+                  ),
+                );
+              },
+            ),
             if (widget.userRole == 'instructor') ...[              
               ListTile(
                 leading: const Icon(Icons.people),

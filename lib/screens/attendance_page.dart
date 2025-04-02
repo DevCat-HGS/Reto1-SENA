@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../models/attendance_model.dart';
 
 class AttendancePage extends StatefulWidget {
   final String userRole;
