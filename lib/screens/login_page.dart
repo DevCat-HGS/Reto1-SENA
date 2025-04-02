@@ -118,6 +118,44 @@ class _LoginPageState extends State<LoginPage> {
                 },
                 child: const Text('¿No tienes cuenta? Regístrate'),
               ),
+              const SizedBox(height: 32),
+              const Text(
+                'Usuarios de prueba',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _emailController.text = 'aprendiz@sena.edu.co';
+                        _passwordController.text = 'aprendiz123';
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                    ),
+                    child: const Text('Aprendiz'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _emailController.text = 'admin@sena.edu.co';
+                        _passwordController.text = 'admin123';
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                    ),
+                    child: const Text('Instructor'),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
