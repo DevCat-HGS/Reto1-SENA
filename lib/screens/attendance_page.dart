@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import '../models/attendance_model.dart';
 
 class AttendancePage extends StatefulWidget {
-  const AttendancePage({super.key});
+  final String userRole;
+  
+  const AttendancePage({super.key, required this.userRole});
 
   @override
   State<AttendancePage> createState() => _AttendancePageState();
@@ -10,15 +12,25 @@ class AttendancePage extends StatefulWidget {
 
 class _AttendancePageState extends State<AttendancePage> {
   final List<Map<String, dynamic>> _students = [
-    {'id': '1', 'name': 'Juan Pérez', 'status': 'presente'},
-    {'id': '2', 'name': 'María García', 'status': 'presente'},
-    {'id': '3', 'name': 'Carlos López', 'status': 'ausente'},
+    {'id': '1', 'name': 'Juan Pérez', 'email': 'jperez@sena.edu.co', 'status': 'presente'},
+    {'id': '2', 'name': 'María García', 'email': 'mgarcia@sena.edu.co', 'status': 'presente'},
+    {'id': '3', 'name': 'Carlos López', 'email': 'clopez@sena.edu.co', 'status': 'ausente'},
   ];
+
+  final List<Map<String, dynamic>> _attendanceRecords = [];
 
   DateTime _selectedDate = DateTime.now();
 
-  void _updateAttendance(String studentId, String status) {
+  void _registerAttendance(String studentId, String status, [String? justification]) {
     setState(() {
+      _attendanceRecords.add({
+        'id': DateTime.now().toString(),
+        'studentId': studentId,
+        'date': _selectedDate,
+        'status': status,
+        'justification': justification,
+      });
+      
       final studentIndex = _students.indexWhere((s) => s['id'] == studentId);
       if (studentIndex != -1) {
         _students[studentIndex]['status'] = status;
@@ -47,7 +59,12 @@ class _AttendancePageState extends State<AttendancePage> {
         title: const Text('Registro de Asistencia'),
         backgroundColor: Theme.of(context).colorScheme.primary,
       ),
-      body: Column(
+      body: widget.userRole == 'instructor' ? _buildInstructorView() : _buildStudentView(),
+    );
+  }
+
+  Widget _buildInstructorView() {
+    return Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -84,7 +101,11 @@ class _AttendancePageState extends State<AttendancePage> {
                       ],
                       onChanged: (String? newValue) {
                         if (newValue != null) {
-                          _updateAttendance(student['id'], newValue);
+                          if (newValue == 'ausente') {
+                            _showJustificationDialog(student['id']);
+                          } else {
+                            _registerAttendance(student['id'], newValue);
+                          }
                         }
                       },
                     ),
@@ -110,6 +131,77 @@ class _AttendancePageState extends State<AttendancePage> {
               ),
               child: const Text('Guardar Asistencia'),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStudentView() {
+    final studentAttendance = _attendanceRecords.where(
+      (record) => record['studentId'] == '1', // Simulando ID del estudiante actual
+    ).toList();
+
+    return ListView.builder(
+      itemCount: studentAttendance.length,
+      itemBuilder: (context, index) {
+        final record = studentAttendance[index];
+        return Card(
+          margin: const EdgeInsets.all(8.0),
+          child: ListTile(
+            title: Text('Fecha: ${record['date'].toString().split(' ')[0]}'),
+            subtitle: Text('Estado: ${record['status']}'),
+            trailing: record['justification'] != null
+                ? IconButton(
+                    icon: const Icon(Icons.info),
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Justificación'),
+                          content: Text(record['justification']),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('Cerrar'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  )
+                : null,
+          ),
+        );
+      },
+    );
+  }
+
+  void _showJustificationDialog(String studentId) {
+    String justification = '';
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Justificación de Ausencia'),
+        content: TextField(
+          decoration: const InputDecoration(
+            labelText: 'Justificación',
+            hintText: 'Ingrese la justificación de la ausencia',
+          ),
+          maxLines: 3,
+          onChanged: (value) => justification = value,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              _registerAttendance(studentId, 'ausente', justification);
+              Navigator.pop(context);
+            },
+            child: const Text('Guardar'),
           ),
         ],
       ),
