@@ -15,6 +15,10 @@ class _ProfilePageState extends State<ProfilePage> {
     'email': 'usuario@demo.com',
     'role': 'instructor',
     'document': '1234567890',
+    'phone': '3001234567',
+    'address': 'Calle 123 #45-67',
+    'program': 'Tecnología en Desarrollo de Software',
+    'semester': '4',
   };
 
   final List<Map<String, dynamic>> _assignedCourses = [
@@ -35,31 +39,56 @@ class _ProfilePageState extends State<ProfilePage> {
   void _showEditProfileDialog() {
     String name = _userData['name'];
     String document = _userData['document'];
+    String phone = _userData['phone'];
+    String address = _userData['address'];
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Editar Perfil'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              decoration: const InputDecoration(
-                labelText: 'Nombre',
-                hintText: 'Ingrese su nombre completo',
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                decoration: const InputDecoration(
+                  labelText: 'Nombre',
+                  hintText: 'Ingrese su nombre completo',
+                  prefixIcon: Icon(Icons.person),
+                ),
+                controller: TextEditingController(text: name),
+                onChanged: (value) => name = value,
               ),
-              controller: TextEditingController(text: name),
-              onChanged: (value) => name = value,
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              decoration: const InputDecoration(
-                labelText: 'Documento',
-                hintText: 'Ingrese su número de documento',
+              const SizedBox(height: 16),
+              TextField(
+                decoration: const InputDecoration(
+                  labelText: 'Documento',
+                  hintText: 'Ingrese su número de documento',
+                  prefixIcon: Icon(Icons.badge),
+                ),
+                controller: TextEditingController(text: document),
+                onChanged: (value) => document = value,
               ),
-              controller: TextEditingController(text: document),
-              onChanged: (value) => document = value,
-            ),
+              const SizedBox(height: 16),
+              TextField(
+                decoration: const InputDecoration(
+                  labelText: 'Teléfono',
+                  hintText: 'Ingrese su número de teléfono',
+                  prefixIcon: Icon(Icons.phone),
+                ),
+                controller: TextEditingController(text: phone),
+                onChanged: (value) => phone = value,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                decoration: const InputDecoration(
+                  labelText: 'Dirección',
+                  hintText: 'Ingrese su dirección',
+                  prefixIcon: Icon(Icons.home),
+                ),
+                controller: TextEditingController(text: address),
+                onChanged: (value) => address = value,
+              ),
           ],
         ),
         actions: [
@@ -72,6 +101,8 @@ class _ProfilePageState extends State<ProfilePage> {
               setState(() {
                 _userData['name'] = name;
                 _userData['document'] = document;
+                _userData['phone'] = phone;
+                _userData['address'] = address;
               });
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
@@ -84,7 +115,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ],
       ),
-    );
+    ));
   }
 
   @override
@@ -117,6 +148,10 @@ class _ProfilePageState extends State<ProfilePage> {
                     const SizedBox(height: 8),
                     Text('Correo: ${_userData['email']}'),
                     Text('Documento: ${_userData['document']}'),
+                    Text('Teléfono: ${_userData['phone']}'),
+                    Text('Dirección: ${_userData['address']}'),
+                    Text('Programa: ${_userData['program']}'),
+                    Text('Semestre: ${_userData['semester']}'),
                     Text('Rol: ${_userData['role']}'),
                     const SizedBox(height: 16),
                     ElevatedButton.icon(

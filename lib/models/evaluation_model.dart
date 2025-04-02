@@ -1,3 +1,39 @@
+class Evidence {
+  final String id;
+  final String type; // 'documento', 'imagen'
+  final String status; // 'pendiente_revision', 'aprobado', 'rechazado'
+  final DateTime uploadDate;
+  final String? comments;
+
+  Evidence({
+    required this.id,
+    required this.type,
+    this.status = 'pendiente_revision',
+    required this.uploadDate,
+    this.comments,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'type': type,
+      'status': status,
+      'uploadDate': uploadDate.toIso8601String(),
+      'comments': comments,
+    };
+  }
+
+  factory Evidence.fromMap(Map<String, dynamic> map) {
+    return Evidence(
+      id: map['id'],
+      type: map['type'],
+      status: map['status'] ?? 'pendiente_revision',
+      uploadDate: DateTime.parse(map['uploadDate']),
+      comments: map['comments'],
+    );
+  }
+}
+
 class Evaluation {
   final String id;
   final String studentId;
@@ -5,9 +41,9 @@ class Evaluation {
   final String title;
   final String type; // 'quiz', 'proyecto', 'taller', etc.
   double score;
-  String status; // 'pendiente', 'calificado'
+  String status; // 'pendiente', 'en_revision', 'calificado'
   String? feedback;
-  List<String> evidenceUrls;
+  List<Evidence> evidences;
   final DateTime date;
 
   Evaluation({
@@ -19,7 +55,7 @@ class Evaluation {
     this.score = 0.0,
     this.status = 'pendiente',
     this.feedback,
-    this.evidenceUrls = const [],
+    this.evidences = const [],
     required this.date,
   });
 
@@ -33,7 +69,7 @@ class Evaluation {
       'score': score,
       'status': status,
       'feedback': feedback,
-      'evidenceUrls': evidenceUrls,
+      'evidences': evidences.map((e) => e.toMap()).toList(),
       'date': date.toIso8601String(),
     };
   }
