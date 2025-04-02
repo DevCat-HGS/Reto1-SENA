@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
       title: 'SENA - Gestión de Asistencia',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF00824A), // Color verde SENA
+          seedColor: const Color.fromARGB(255, 22, 206, 127), // Color verde SENA
           brightness: Brightness.light,
         ),
         useMaterial3: true,

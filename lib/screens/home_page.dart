@@ -140,54 +140,126 @@ class _HomePageState extends State<HomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                widget.userRole == 'instructor' ? 'Mis Cursos' : 'Mis Clases',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                height: 200,
-                child: ListView.builder(
-                  itemCount: 3, // TODO: Reemplazar con datos reales
-                  itemBuilder: (context, index) {
-                    return Card(
-                      child: ListTile(
-                        title: Text('Curso ${index + 1}'),
-                        subtitle: const Text('Descripción del curso'),
-                        trailing: const Icon(Icons.arrow_forward_ios),
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Próximamente: Detalles del curso'),
-                            ),
-                          );
-                        },
-                      ),
-                    );
-                  },
+              if (widget.userRole == 'instructor') ...[
+                const Text(
+                  'Mis Cursos a Cargo',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Actividades Recientes',
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                height: 200,
-                child: ListView.builder(
-                  itemCount: 5, // TODO: Reemplazar con datos reales
-                  itemBuilder: (context, index) {
-                    return ListTile(
-                      leading: const CircleAvatar(
-                        child: Icon(Icons.notifications),
-                      ),
-                      title: Text('Actividad ${index + 1}'),
-                      subtitle: const Text('Hace 2 horas'),
-                    );
-                  },
+                const SizedBox(height: 16),
+                SizedBox(
+                  height: 200,
+                  child: ListView.builder(
+                    itemCount: 3,
+                    itemBuilder: (context, index) {
+                      return Card(
+                        child: ListTile(
+                          leading: const CircleAvatar(
+                            child: Icon(Icons.school),
+                          ),
+                          title: Text('Curso ${index + 1}'),
+                          subtitle: Text('Código: C00${index + 1} - 20 estudiantes'),
+                          trailing: const Icon(Icons.arrow_forward_ios),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AttendancePage(userRole: widget.userRole),
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
                 ),
-              ),
+                const SizedBox(height: 24),
+                const Text(
+                  'Asistencias Recientes',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  height: 200,
+                  child: ListView.builder(
+                    itemCount: 5,
+                    itemBuilder: (context, index) {
+                      return Card(
+                        child: ListTile(
+                          leading: const CircleAvatar(
+                            child: Icon(Icons.calendar_today),
+                          ),
+                          title: Text('Registro de Asistencia - Curso ${index + 1}'),
+                          subtitle: Text('${DateTime.now().subtract(Duration(days: index)).day}/${DateTime.now().month}/2024'),
+                          trailing: Text('${15 + index} estudiantes'),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ] else ...[  // Vista para aprendices
+                const Text(
+                  'Mis Materias Inscritas',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  height: 200,
+                  child: ListView.builder(
+                    itemCount: 4,
+                    itemBuilder: (context, index) {
+                      return Card(
+                        child: ListTile(
+                          leading: const CircleAvatar(
+                            child: Icon(Icons.book),
+                          ),
+                          title: Text('Materia ${index + 1}'),
+                          subtitle: Text('Instructor: Profesor ${index + 1}'),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text('Nota: ${4.0 + (index * 0.2)}'),
+                              const SizedBox(width: 8),
+                              const Icon(Icons.arrow_forward_ios),
+                            ],
+                          ),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => GradesPage(userRole: widget.userRole),
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  'Próximas Evaluaciones',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  height: 200,
+                  child: ListView.builder(
+                    itemCount: 3,
+                    itemBuilder: (context, index) {
+                      return Card(
+                        child: ListTile(
+                          leading: const CircleAvatar(
+                            child: Icon(Icons.assignment),
+                          ),
+                          title: Text('Evaluación ${index + 1}'),
+                          subtitle: Text('Fecha: ${DateTime.now().add(Duration(days: index + 1)).day}/${DateTime.now().month}/2024'),
+                          trailing: const Text('Pendiente'),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
             ],
           ),
         ),

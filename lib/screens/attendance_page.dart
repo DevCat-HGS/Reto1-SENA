@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/course_model.dart';
+import '../models/attendance_model.dart';
 
 class AttendancePage extends StatefulWidget {
   final String userRole;
@@ -10,7 +11,8 @@ class AttendancePage extends StatefulWidget {
   State<AttendancePage> createState() => _AttendancePageState();
 }
 
-class _AttendancePageState extends State<AttendancePage> {
+class _AttendancePageState extends State<AttendancePage> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
   final List<Course> _courses = [
     Course(id: '1', name: 'Desarrollo de Software', code: 'DS001'),
     Course(id: '2', name: 'Bases de Datos', code: 'BD001'),
@@ -23,14 +25,74 @@ class _AttendancePageState extends State<AttendancePage> {
     {'id': '3', 'name': 'Carlos López', 'email': 'clopez@sena.edu.co', 'status': 'ausente'},
   ];
 
-  final List<Map<String, dynamic>> _attendanceRecords = [];
+  final List<Attendance> _attendanceRecords = [];
   DateTime _selectedDate = DateTime.now();
-  final TextEditingController _justificationController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _loadAttendanceRecords();
+  }
 
   @override
   void dispose() {
-    _justificationController.dispose();
+    _tabController.dispose();
     super.dispose();
+  }
+
+  void _loadAttendanceRecords() {
+    // Simular carga de registros de asistencia
+    setState(() {
+      _attendanceRecords.addAll([
+        Attendance(
+          id: '1',
+          studentId: '1',
+          date: DateTime.now().subtract(const Duration(days: 1)),
+          status: 'presente',
+        ),
+        Attendance(
+          id: '2',
+          studentId: '2',
+          date: DateTime.now().subtract(const Duration(days: 1)),
+          status: 'ausente',
+          justification: 'Cita médica',
+        ),
+      ]);
+    });
+  }
+
+  void _showJustificationDialog(String studentId) {
+    final TextEditingController justificationController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Justificación de Inasistencia'),
+        content: TextField(
+          controller: justificationController,
+          decoration: const InputDecoration(
+            hintText: 'Ingrese la justificación',
+            border: OutlineInputBorder(),
+          ),
+          maxLines: 3,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (justificationController.text.isNotEmpty) {
+                _registerAttendance(studentId, 'ausente', justificationController.text);
+                Navigator.pop(context);
+              }
+            },
+            child: const Text('Guardar'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _registerAttendance(String studentId, String status, [String? justification]) {
@@ -44,264 +106,202 @@ class _AttendancePageState extends State<AttendancePage> {
       return;
     }
 
+    final attendance = Attendance(
+      id: DateTime.now().toString(),
+      studentId: studentId,
+      date: _selectedDate,
+      status: status,
+      justification: justification,
+    );
+
     setState(() {
-      _attendanceRecords.add({
-        'id': DateTime.now().toString(),
-        'courseId': _selectedCourseId,
-        'studentId': studentId,
-        'date': _selectedDate,
-        'status': status,
-        'justification': justification,
-      });
-      
+      _attendanceRecords.add(attendance);
       final studentIndex = _students.indexWhere((s) => s['id'] == studentId);
       if (studentIndex != -1) {
         _students[studentIndex]['status'] = status;
       }
     });
-  }
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime(2024),
-      lastDate: DateTime.now(),
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Asistencia registrada correctamente'),
+        backgroundColor: Colors.green,
+      ),
     );
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-      });
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Registro de Asistencia'),
+        title: const Text('Asistencias'),
         backgroundColor: Theme.of(context).colorScheme.primary,
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: 'Registro'),
+            Tab(text: 'Historial'),
+          ],
+        ),
       ),
-      body: widget.userRole == 'instructor' ? _buildInstructorView() : _buildStudentView(),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildRegistrationTab(),
+          _buildHistoryTab(),
+        ],
+      ),
     );
   }
 
-  Widget _buildInstructorView() {
-    return SingleChildScrollView(
+  Widget _buildRegistrationTab() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
       child: Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          DropdownButtonFormField<String>(
+            value: _selectedCourseId,
+            decoration: const InputDecoration(
+              labelText: 'Seleccionar Curso',
+              border: OutlineInputBorder(),
+            ),
+            items: _courses.map((course) {
+              return DropdownMenuItem(
+                value: course.id,
+                child: Text('${course.name} (${course.code})'),
+              );
+            }).toList(),
+            onChanged: (value) {
+              setState(() {
+                _selectedCourseId = value;
+              });
+            },
+          ),
+          const SizedBox(height: 16),
+          Row(
             children: [
-              DropdownButtonFormField<String>(
-                value: _selectedCourseId,
-                decoration: const InputDecoration(
-                  labelText: 'Seleccionar Curso',
-                  border: OutlineInputBorder(),
-                ),
-                items: _courses.map((course) {
-                  return DropdownMenuItem(
-                    value: course.id,
-                    child: Text('${course.name} (${course.code})'),
+              const Text('Fecha: '),
+              TextButton(
+                onPressed: () async {
+                  final date = await showDatePicker(
+                    context: context,
+                    initialDate: _selectedDate,
+                    firstDate: DateTime.now().subtract(const Duration(days: 30)),
+                    lastDate: DateTime.now(),
                   );
-                }).toList(),
-                onChanged: (String? value) {
-                  setState(() {
-                    _selectedCourseId = value;
-                  });
+                  if (date != null) {
+                    setState(() {
+                      _selectedDate = date;
+                    });
+                  }
                 },
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Fecha: ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                  ElevatedButton.icon(
-                    onPressed: () => _selectDate(context),
-                    icon: const Icon(Icons.calendar_today),
-                    label: const Text('Cambiar Fecha'),
-                  ),
-                ],
+                child: Text(
+                  '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+                ),
               ),
             ],
           ),
-        ),
-        SizedBox(
-          height: MediaQuery.of(context).size.height * 0.5,
-          child: ListView.builder(
-            itemCount: _students.length,
-            itemBuilder: (context, index) {
-              final student = _students[index];
-              return Card(
-                margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                child: ListTile(
-                  title: Text(student['name']),
-                  subtitle: Text(student['email']),
-                  trailing: DropdownButton<String>(
-                    value: student['status'],
-                    items: const [
-                      DropdownMenuItem(value: 'presente', child: Text('Presente')),
-                      DropdownMenuItem(value: 'ausente', child: Text('Ausente')),
-                      DropdownMenuItem(value: 'tardanza', child: Text('Tardanza')),
-                    ],
-                    onChanged: (String? newValue) {
-                      if (newValue != null) {
-                        if (newValue == 'ausente') {
-                          _showJustificationDialog(student['id']);
-                        } else {
-                          _registerAttendance(student['id'], newValue);
-                        }
-                      }
-                    },
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: ElevatedButton(
-            onPressed: () {
-              if (_selectedCourseId == null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Por favor seleccione un curso'),
-                    backgroundColor: Colors.red,
+          const SizedBox(height: 16),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _students.length,
+              itemBuilder: (context, index) {
+                final student = _students[index];
+                return Card(
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      child: Text(student['name'][0]),
+                    ),
+                    title: Text(student['name']),
+                    subtitle: Text(student['email']),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.check_circle_outline),
+                          color: student['status'] == 'presente' ? Colors.green : null,
+                          onPressed: () => _registerAttendance(student['id'], 'presente'),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.cancel_outlined),
+                          color: student['status'] == 'ausente' ? Colors.red : null,
+                          onPressed: () => _showJustificationDialog(student['id']),
+                        ),
+                      ],
+                    ),
                   ),
                 );
-                return;
-              }
-              // Aquí se implementará la lógica para guardar la asistencia
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Asistencia guardada correctamente'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              minimumSize: const Size(double.infinity, 50),
-            ),
-            child: const Text('Guardar Asistencia'),
-          ),
-        ),
-      ],
-    ),
-    );
-  }
-
-  Widget _buildStudentView() {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: DropdownButtonFormField<String>(
-              value: _selectedCourseId,
-              decoration: const InputDecoration(
-                labelText: 'Seleccionar Curso',
-                border: OutlineInputBorder(),
-              ),
-              items: _courses.map((course) {
-                return DropdownMenuItem(
-                  value: course.id,
-                  child: Text('${course.name} (${course.code})'),
-                );
-              }).toList(),
-              onChanged: (String? value) {
-                setState(() {
-                  _selectedCourseId = value;
-                });
               },
             ),
           ),
-          SizedBox(
-            height: MediaQuery.of(context).size.height * 0.6,
-          child: _selectedCourseId == null
-              ? const Center(child: Text('Seleccione un curso para ver la asistencia'))
-              : ListView.builder(
-                  itemCount: _attendanceRecords.where(
-                    (record) =>
-                        record['studentId'] == '1' && // Simulando ID del estudiante actual
-                        record['courseId'] == _selectedCourseId,
-                  ).length,
-                  itemBuilder: (context, index) {
-                    final records = _attendanceRecords.where(
-                      (record) =>
-                          record['studentId'] == '1' && // Simulando ID del estudiante actual
-                          record['courseId'] == _selectedCourseId,
-                    ).toList();
-                    final record = records[index];
-                    return Card(
-                      margin: const EdgeInsets.all(8.0),
-                      child: ListTile(
-                        title: Text(
-                            'Fecha: ${record['date'].day}/${record['date'].month}/${record['date'].year}'),
-                        subtitle: Text('Estado: ${record['status']}'),
-                        trailing: record['justification'] != null
-                            ? IconButton(
-                                icon: const Icon(Icons.info),
-                                onPressed: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      title: const Text('Justificación'),
-                                      content: Text(record['justification']),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () => Navigator.pop(context),
-                                          child: const Text('Cerrar'),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                              )
-                            : null,
-                      ),
-                    );
-                  },
-                ),
-        ),
-      ],
-    ),
+        ],
+      ),
     );
   }
 
-  void _showJustificationDialog(String studentId) {
-    _justificationController.clear();
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Justificación de Ausencia'),
-        content: TextField(
-          controller: _justificationController,
-          decoration: const InputDecoration(
-            labelText: 'Justificación',
-            hintText: 'Ingrese la justificación de la ausencia',
-          ),
-          maxLines: 3,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              _registerAttendance(
-                studentId,
-                'ausente',
-                _justificationController.text,
+  Widget _buildHistoryTab() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          DropdownButtonFormField<String>(
+            value: _selectedCourseId,
+            decoration: const InputDecoration(
+              labelText: 'Filtrar por Curso',
+              border: OutlineInputBorder(),
+            ),
+            items: _courses.map((course) {
+              return DropdownMenuItem(
+                value: course.id,
+                child: Text('${course.name} (${course.code})'),
               );
-              Navigator.pop(context);
+            }).toList(),
+            onChanged: (value) {
+              setState(() {
+                _selectedCourseId = value;
+              });
             },
-            child: const Text('Guardar'),
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _attendanceRecords.length,
+              itemBuilder: (context, index) {
+                final attendance = _attendanceRecords[index];
+                final student = _students.firstWhere(
+                  (s) => s['id'] == attendance.studentId,
+                  orElse: () => {'name': 'Estudiante no encontrado'},
+                );
+                return Card(
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: attendance.status == 'presente'
+                          ? Colors.green
+                          : Colors.red,
+                      child: Icon(
+                        attendance.status == 'presente'
+                            ? Icons.check
+                            : Icons.close,
+                        color: Colors.white,
+                      ),
+                    ),
+                    title: Text(student['name']),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Fecha: ${attendance.date.day}/${attendance.date.month}/${attendance.date.year}',
+                        ),
+                        if (attendance.justification != null)
+                          Text('Justificación: ${attendance.justification}'),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),
