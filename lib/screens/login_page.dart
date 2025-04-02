@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -26,8 +27,20 @@ class _LoginPageState extends State<LoginPage> {
       final password = _passwordController.text;
       
       // En un caso real, aquí se realizaría la autenticación contra un backend
+      String? userRole;
       if (email == 'admin@sena.edu.co' && password == 'admin123') {
-        Navigator.pushReplacementNamed(context, '/home');
+        userRole = 'admin';
+      } else if (email == 'aprendiz@sena.edu.co' && password == 'aprendiz123') {
+        userRole = 'aprendiz';
+      }
+
+      if (userRole != null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomePage(userRole: userRole!),
+          ),
+        );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

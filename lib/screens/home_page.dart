@@ -54,12 +54,12 @@ class _HomePageState extends State<HomePage> {
                     'Rol: ${widget.userRole}',
                     style: const TextStyle(color: Colors.white),
                   ),
-                  SizedBox(height: 10),
-                  Text(
+                  const SizedBox(height: 10),
+                  const Text(
                     'Nombre del Usuario',
                     style: TextStyle(color: Colors.white, fontSize: 18),
                   ),
-                  Text(
+                  const Text(
                     'correo@ejemplo.com',
                     style: TextStyle(color: Colors.white70),
                   ),
@@ -130,58 +130,63 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.userRole == 'instructor' ? 'Mis Cursos' : 'Mis Clases',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: ListView.builder(
-                itemCount: 3, // TODO: Reemplazar con datos reales
-                itemBuilder: (context, index) {
-                  return Card(
-                    child: ListTile(
-                      title: Text('Curso ${index + 1}'),
-                      subtitle: const Text('Descripción del curso'),
-                      trailing: const Icon(Icons.arrow_forward_ios),
-                      onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Próximamente: Detalles del curso'),
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                },
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                widget.userRole == 'instructor' ? 'Mis Cursos' : 'Mis Clases',
+                style: Theme.of(context).textTheme.headlineSmall,
               ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Actividades Recientes',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: ListView.builder(
-                itemCount: 5, // TODO: Reemplazar con datos reales
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    leading: const CircleAvatar(
-                      child: Icon(Icons.notifications),
-                    ),
-                    title: Text('Actividad ${index + 1}'),
-                    subtitle: const Text('Hace 2 horas'),
-                  );
-                },
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 200,
+                child: ListView.builder(
+                  itemCount: 3, // TODO: Reemplazar con datos reales
+                  itemBuilder: (context, index) {
+                    return Card(
+                      child: ListTile(
+                        title: Text('Curso ${index + 1}'),
+                        subtitle: const Text('Descripción del curso'),
+                        trailing: const Icon(Icons.arrow_forward_ios),
+                        onTap: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Próximamente: Detalles del curso'),
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 16),
+              Text(
+                'Actividades Recientes',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 200,
+                child: ListView.builder(
+                  itemCount: 5, // TODO: Reemplazar con datos reales
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      leading: const CircleAvatar(
+                        child: Icon(Icons.notifications),
+                      ),
+                      title: Text('Actividad ${index + 1}'),
+                      subtitle: const Text('Hace 2 horas'),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
       floatingActionButton: widget.userRole == 'instructor'
